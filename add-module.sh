@@ -14,13 +14,13 @@ if [ "$2" = "--skip-api" ]; then
   SKIP_API=true
 fi
 
-# Pastikan MODULE_NAME dalam kebab-case, misalnya "product-merchant"
+# Pastikan MODULE_NAME dalam kebab-case, misalnya "product"
 KEBAB_CASE=$(echo "$MODULE_NAME" | tr '[:upper:]' '[:lower:]')
 
-# Konversi MODULE_NAME dari kebab-case ke camelCase, contoh: "product-merchant" -> "productMerchant"
+# Konversi MODULE_NAME dari kebab-case ke camelCase, contoh: "product" -> "product"
 MODULE_NAME_CAMEL=$(echo "$KEBAB_CASE" | sed -E 's/-([a-z])/\U\1/g')
 
-# Konversi MODULE_NAME_CAMEL ke PascalCase, contoh: "productMerchant" -> "ProductMerchant"
+# Konversi MODULE_NAME_CAMEL ke PascalCase, contoh: "product" -> "Product"
 MODULE_NAME_PASCAL=$(echo "$MODULE_NAME_CAMEL" | sed -E 's/^(.)/\U\1/')
 
 # Tentukan path direktori module di dalam src/features
@@ -42,6 +42,7 @@ export * from './create-${KEBAB_CASE}';
 export * from './update-${KEBAB_CASE}';
 export * from './delete-${KEBAB_CASE}';
 export * from './get-${KEBAB_CASE}';
+export * from './get-${KEBAB_CASE}s';
 EOF
 
   # Buat file _api/get-<module-name>.ts
@@ -49,8 +50,18 @@ EOF
   cat > "$GET_FILE" <<EOF
 // Get ${MODULE_NAME} module
 // Tambahkan kode untuk mengambil data ${MODULE_NAME}
-export async function get${MODULE_NAME_PASCAL}() {
+export async function get${MODULE_NAME_PASCAL}(id: string) {
   // Implement get logic here
+}
+EOF
+
+  # Buat file _api/get-<module-name>s.ts (untuk mengambil banyak produk)
+  GETS_FILE="$API_DIR/get-${KEBAB_CASE}s.ts"
+  cat > "$GETS_FILE" <<EOF
+// Get many ${MODULE_NAME}s module
+// Tambahkan kode untuk mengambil banyak data ${MODULE_NAME}s
+export async function get${MODULE_NAME_PASCAL}s() {
+  // Implement get logic here for multiple products
 }
 EOF
 
@@ -99,7 +110,7 @@ import React from 'react';
 interface ${MODULE_NAME_PASCAL}PageProps {}
 
 const ${MODULE_NAME_PASCAL}Page: React.FC<${MODULE_NAME_PASCAL}PageProps> = ({}) => {
-  return <div>${MODULE_NAME_PASCAL}Page</div>;
+  return <div>${MODULE_NAME_PASCAL} Page</div>;
 };
 
 export default ${MODULE_NAME_PASCAL}Page;
@@ -111,12 +122,12 @@ cat > "$SCHEMA_FILE" <<EOF
 // Schema for the ${KEBAB_CASE} module
 // Skema untuk modul ${KEBAB_CASE}
 // Import dan definisikan schema Zod sesuai kebutuhan
-// Import and define the Zod schema as needed
 import { z } from 'zod';
 
 export const ${MODULE_NAME_CAMEL}Schema = z.object({
   // contoh: id: z.string(),
-  // example: id: z.string(),
+  id: z.string(),
+  name: z.string(),
 });
 
 export const ${MODULE_NAME_CAMEL}ResponseSchema = z.object({
